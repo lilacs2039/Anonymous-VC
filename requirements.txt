@@ -1,0 +1,12 @@
+## setup when initial win10 fastai/pytorch virtual env.
+# torchvision>=0.2.1
+# torch>=0.4.0
+# fastai
+
+## install via conda
+## $ conda install scikit-image pillow librosa
+# scikit-image
+# pillow
+# librosa
+
+pyworld

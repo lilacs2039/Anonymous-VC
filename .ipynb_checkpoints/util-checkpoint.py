@@ -4,7 +4,7 @@ import librosa
 import numpy as np
 import pyworld as pw
 import scipy
-import scipy.misc
+import imageio
 from sklearn.preprocessing import normalize
 
 
@@ -74,14 +74,14 @@ def convert_to_wave(Dabs, Dphase):
 def convert_to_spectrogram(waveNDArray):
     """
     convert audio 1D Numpy Array to spectrogram 2D Numpy Array.
-    note. Dabs = np.log10(np.abs(D) + 10**-10)
+    note. Dabs = np.log10(np.abs(D) + 10**-6)
 
     :param waveNDArray:
     :return: Dabs,Dphase
     """
     # スペクトル・位相マップ　作成
     D = librosa.stft(waveNDArray, n_fft=conf.n_fft)  #D:np.ndarray [shape=(1 + n_fft/2, t), dtype=dtype]
-    Dabs = np.log10(np.abs(D) + 10**-10)
+    Dabs = np.log10(np.abs(D) + 10**-6)
     Dphase = np.angle(D)
     return Dabs,Dphase
 
@@ -147,7 +147,7 @@ def normalize(ndArray, min=0, max=1):
     ret = scaled + offset
     if conf.print_scaleFactor:
         print('scale:{}, offset:{}'.format(size_ratio,offset))
-    return ret, size_ratio, offset
+    return ret.clip(0,1), size_ratio, offset
 
 def denormalize(ndArray, scale_factor=conf.scale_factor,offset=conf.offset):
     denormalized = (ndArray - offset)/ scale_factor
@@ -180,10 +180,10 @@ def save_spectrogram_asImage(Dabs,Dphase,savename):
     :return:
     """
     #  create image array            -> (channel,row,col)
-    assert (0 <= Dabs.min()) & ( Dabs.max() <=1), "Dabs must be in 0~1"
+    assert (0 <= Dabs.min()) & ( Dabs.max() <=1), f"Dabs must be in 0~1. min:{Dabs.min()}, max:{Dabs.max()}"
     assert (0 <= Dphase.min()) & ( Dphase.max() <=1) , "Dphase must be in 0~1"
     srcImg = (np.array([Dabs,Dphase,np.zeros(Dabs.shape)])*255).astype('uint8')
     # reorder to channel last       -> (row,col,channel)
     srcImg = np.rollaxis(srcImg,0,3)
-    scipy.misc.imsave(savename, srcImg)
+    imageio.imsave(savename, srcImg)
 

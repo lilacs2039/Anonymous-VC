@@ -19,14 +19,14 @@ class conf:
     prep_audio_dataset_second=10
 
     # sampling rate
-    sample_ratio = 22050
+    sample_ratio = 16000 # 22050
     """
     Short Time FFT window size
 
     librosa default value　2048
     stft returned value shape　(1 + n_fft/2, t)
     """
-    n_fft = 2048
+    n_fft = 256 #2048
 
     """
     Encoderで縦・横方向に畳み込むサイズ倍率
@@ -34,7 +34,7 @@ class conf:
 
     入力スペクトログラムの行・列のサイズはこの倍数とすること
     """
-    Encocer_Feature_Constant=2**9   #2**8:256
+    Encocer_Feature_Constant=2**7   #2**7:128@n_fft256  #2**8:256
 
     """
     enable saving the label(specImage)

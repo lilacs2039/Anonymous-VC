@@ -47,16 +47,29 @@ class conf:
     print_scaleFactor=False
 
     """
-    denormalizeのデフォルトのscale_factor
-    データセット音声に合わせて変更のこと
+    スペクトログラムへの変換時の最小強度
+    　→　対数とったときに-6が最小値になる
     """
-    scale_factor=0.1
+    eps= 10**-6
+    
+    """
+    強度スペクトログラムの正規化時のスケール倍率
+    """
+    scale_abs=0.1
+    """
+    強度スペクトログラムの正規化時のオフセット
+    epsから決定
+    """
+    offset_abs=0.6
 
     """
-    denormalizeのデフォルトのoffset
-    データセット音声に合わせて変更のこと
+    位相スペクトログラムの正規化時のスケール倍率
     """
-    offset=0.8
+    scale_phase=1/(np.pi*2)
+    """
+    位相スペクトログラムの正規化時のオフセット
+    """
+    offset_phase=0.5
 
     """
     各音声データの長さ
@@ -81,7 +94,7 @@ def convert_to_spectrogram(waveNDArray):
     """
     # スペクトル・位相マップ　作成
     D = librosa.stft(waveNDArray, n_fft=conf.n_fft)  #D:np.ndarray [shape=(1 + n_fft/2, t), dtype=dtype]
-    Dabs = np.log10(np.abs(D) + 10**-6)
+    Dabs = np.log10(np.abs(D) + conf.eps)
     Dphase = np.angle(D)
     return Dabs,Dphase
 
@@ -130,9 +143,12 @@ def anonymization(fs, waveNDArray, f0Value = 0, sp_strechRatio = np.random.unifo
     return synthesized
 
 
+def normalize_abs(a:np.ndarray) ->(np.ndarray,float,float):
+    return normalize(a,scale=conf.scale_abs,offset=conf.offset_abs)
+def normalize_phase(a:np.ndarray)->(np.ndarray,float,float):
+    return normalize(a,scale=conf.scale_phase,offset=conf.offset_phase)
 
-
-def normalize(ndArray, min=0, max=1):
+def normalize(ndArray, min=0, max=1,scale=None,offset=None):
     """
     normalize ndArray.
     (all ndArray values are clamped in min~max.)
@@ -141,17 +157,26 @@ def normalize(ndArray, min=0, max=1):
     :param max:
     :return: スケール後の配列、スケール倍率、オフセット
     """
-    size_ratio = (max-min) / (np.max(ndArray) - np.min(ndArray))
-    scaled = ndArray * size_ratio
-    offset = - np.min(scaled) + min
+    if scale==None:
+        scale = (max-min) / (np.max(ndArray) - np.min(ndArray))
+    scaled = ndArray * scale
+    if offset==None:
+        offset = - np.min(scaled) + min
     ret = scaled + offset
+    if(ret.min()<min) or (max<ret.max()):
+        print("warning:normalized value outrange (but cliped).check scale/offset value.")
+        print(f"original max/min:{ndArray.max()}/{ndArray.min()}")
+        print(f"original max/min:{ndArray.max()}/{ndArray.min()}")
     if conf.print_scaleFactor:
-        print('scale:{}, offset:{}'.format(size_ratio,offset))
-    return ret.clip(0,1), size_ratio, offset
+        print('scale:{}, offset:{}'.format(scale,offset))
+    return ret.clip(min,max), scale, offset
 
-def denormalize(ndArray, scale_factor=conf.scale_factor,offset=conf.offset):
-    denormalized = (ndArray - offset)/ scale_factor
-    return denormalized
+def denormalize_abs(a:np.ndarray)->np.ndarray:
+    return denormalize(a,scale=conf.scale_abs,offset=conf.offset_abs)
+def denormalize_phase(a:np.ndarray) ->np.ndarray:
+    return denormalize(a,scale=conf.scale_phase,offset=conf.offset_phase)
+def denormalize(ndArray:np.ndarray, scale:float,offset:float) ->np.ndarray:
+    return (ndArray - offset)/ scale
 
 def clip_audio_length(audio_ndarray, sr, second = conf.audio_dataset_second):
     """

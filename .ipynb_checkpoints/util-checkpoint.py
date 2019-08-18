@@ -16,7 +16,7 @@ class conf:
     """
     time length of preprocessed audio  
     """
-    prep_audio_dataset_second=10
+    prep_audio_dataset_second=3
 
     # sampling rate
     sample_ratio = 16000 # 22050
@@ -71,12 +71,7 @@ class conf:
     """
     offset_phase=0.5
 
-    """
-    各音声データの長さ
-    ミニバッチ学習するならデータ長さ統一する必要あり
-    None:データ長さ統一しない
-    """
-    audio_dataset_second = None
+
 
 
 def convert_to_wave(Dabs, Dphase):
@@ -178,7 +173,7 @@ def denormalize_phase(a:np.ndarray) ->np.ndarray:
 def denormalize(ndArray:np.ndarray, scale:float,offset:float) ->np.ndarray:
     return (ndArray - offset)/ scale
 
-def clip_audio_length(audio_ndarray, sr, second = conf.audio_dataset_second):
+def clip_audio_length(audio_ndarray, sr, second):
     """
     audio_ndarray の長さ[秒]をsecondになるようにカット・paddingする
     :param audio_ndarray:

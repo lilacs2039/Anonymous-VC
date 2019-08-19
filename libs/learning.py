@@ -152,3 +152,9 @@ class PklImageImageList(ImageImageList):
             display_audio_from_image(z,f"prediction{str(i)}")
             display_audio_from_image(y,f"target{str(i)}")
         plt.show()
+
+# loss func        
+def L1LossFlat(*args, axis:int=-1, floatify:bool=True, **kwargs):
+    "Same as `nn.L1Loss`, but flattens input and target. nn.L1Loss docs:https://pytorch.org/docs/stable/nn.html#l1loss"
+    return FlattenedLoss(nn.L1Loss, *args, axis=axis, floatify=floatify, is_2d=False, **kwargs)
+

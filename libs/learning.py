@@ -104,11 +104,12 @@ def postprocess_tensor(a:Tensor):
 
 
 # plots, representation of images/audios
-def hist(a,title=""):
+def hist(a,title="",savepath=None):
     plt.title(title)
     plt.hist(a, 20,
              weights=None, density=False,
              histtype="step", log=False)
+    if savepath!=None: plt.savefig(savepath)
     plt.show()
 
 def display_audio(abs,phase,text=""):

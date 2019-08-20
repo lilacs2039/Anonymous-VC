@@ -117,8 +117,8 @@ def anonymization(fs, waveNDArray, f0Value = 0, sp_strechRatio = np.random.unifo
     f0 = pw.stonemask(waveNDArray, _f0, t, fs)  # 基本周波数の修正
     sp = pw.cheaptrick(waveNDArray, f0, t, fs)  # スペクトル包絡の抽出
     ap = pw.d4c(waveNDArray, f0, t, fs)  # 非周期性指標の抽出
-    f0_fixed0 = np.ones(f0.shape) * f0Value
-    f0_median = np.median(f0)
+#     f0_fixed0 = np.ones(f0.shape) * f0Value
+#     f0_median = np.median(f0)
     sp_median = np.median(sp)
     ap_median = np.median(ap)
     # SPを高周波方向に伸縮
@@ -133,7 +133,7 @@ def anonymization(fs, waveNDArray, f0Value = 0, sp_strechRatio = np.random.unifo
     sp_gaussian = scipy.ndimage.filters.gaussian_filter(sp_noised,gaussian_s)
     ap_gaussian = scipy.ndimage.filters.gaussian_filter(ap_noised,gaussian_s)
     # 音声復元
-    synthesized = pw.synthesize(f0_fixed0, sp, ap, fs)
+    synthesized = pw.synthesize(f0, sp, ap, fs)
     return synthesized
 
 
@@ -172,18 +172,28 @@ def denormalize_phase(a:np.ndarray) ->np.ndarray:
 def denormalize(ndArray:np.ndarray, scale:float,offset:float) ->np.ndarray:
     return (ndArray - offset)/ scale
 
-def clip_audio_length(audio_ndarray, sr, second):
+def split_audio(audio_ndarray:np.ndarray, sr, interval_sec)->[np.ndarray]:
+    total_spl = audio_ndarray.shape[0]
+    ret = [clip_audio_length(audio_ndarray, \
+        sr, i*interval_sec, interval_sec) \
+            for i in range(int(np.ceil(total_spl/(interval_sec*sr))))]
+    return ret
+    
+def clip_audio_length(audio_ndarray:np.ndarray, sr, start_sec, interval_sec)->np.ndarray:
     """
-    audio_ndarray の長さ[秒]をsecondになるようにカット・paddingする
-    :param audio_ndarray:
-    :param sr:
+    cut&padding audio_ndarray.
+    :param audio_ndarray: 1-dimensional ndarray of audio signal
+    :param sr: sampling_rate
     :return:
     """
-    if audio_ndarray.shape[0] > second * sr:
-        ret = audio_ndarray[:second * sr]
+    end_spl = (start_sec + interval_sec)*sr
+    if audio_ndarray.shape[0] > end_spl:
+        ret = audio_ndarray[:end_spl]
     else:
-        ret = np.pad(audio_ndarray, [(0, second * sr - audio_ndarray.shape[0])], 'constant', constant_values=0)
-    assert ret.__len__() == second * sr , "audioのサイズが second[sec] * sr(sampling rate)[/sec]になっていない"
+        ret = np.pad(audio_ndarray, [(0, end_spl - audio_ndarray.shape[0])], 'constant', constant_values=0)
+    start_spl=start_sec*sr
+    ret = ret[start_spl:]
+    assert ret.__len__() == interval_sec * sr , "audioのサイズが interval_sec[sec] * sr(sampling rate)[/sec]になっていない"
     return ret
 
 def save_spectrogram_asImage(Dabs,Dphase,savename):

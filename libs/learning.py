@@ -64,32 +64,43 @@ def preprocess_input(input_file:Path,original_output_dir:Path,anonymized_output_
     """
     src ,fs= librosa.load(input_file.resolve(), sr=conf.sample_ratio)
     if  conf.prep_audio_dataset_second is not None:
-        src = clip_audio_length(src,fs,second=conf.prep_audio_dataset_second)
+        src_list=split_audio(src,fs,interval_sec=conf.prep_audio_dataset_second)
+#         src = clip_audio_length(src,fs,start_sec=0
+#             ,interval_sec=conf.prep_audio_dataset_second)
+    else:
+        src_list = [src]
+    sa_list = []
+    sp_list = []
+    aa_list = []
+    ap_list = []
+    i=0
+    for src in src_list:
+        # preprocess src audio
+        src_abs, src_phase = convert_to_spectrogram(src)
+        src_abs ,src_phase = padding_spectrogram(src_abs), padding_spectrogram(src_phase)
+        src_abs,_,_= normalize_abs(src_abs)
+        src_phase,_,_= normalize_phase(src_phase)
 
-    # preprocess src audio
-    src_abs, src_phase = convert_to_spectrogram(src)
-    src_abs ,src_phase = padding_spectrogram(src_abs), padding_spectrogram(src_phase)
-    src_abs,_,_= normalize_abs(src_abs)
-    src_phase,_,_= normalize_phase(src_phase)
+        # preprocess anonymized audio
+        anonymized = anonymization(fs, src)
+        anonymized_abs, anonymized_phase = convert_to_spectrogram(anonymized)
+        anonymized_abs, anonymized_phase = padding_spectrogram(anonymized_abs), padding_spectrogram(anonymized_phase)
+        anonymized_abs,_,_= normalize_abs(anonymized_abs)
+        anonymized_phase,_,_= normalize_phase(anonymized_phase)
 
-    # preprocess anonymized audio
-    anonymized = anonymization(fs, src)
-    anonymized_abs, anonymized_phase = convert_to_spectrogram(anonymized)
-    anonymized_abs, anonymized_phase = padding_spectrogram(anonymized_abs), padding_spectrogram(anonymized_phase)
-    anonymized_abs,_,_= normalize_abs(anonymized_abs)
-    anonymized_phase,_,_= normalize_phase(anonymized_phase)
+        with open(original_output_dir/f"{input_file.name}_{str(i)}.pkl",'wb') as f:
+            pickle.dump(np_to_image(src_abs,src_phase),f)
+        with open(anonymized_output_dir/f"{input_file.name}_{str(i)}.pkl",'wb') as f:
+            pickle.dump(np_to_image(anonymized_abs,anonymized_phase),f)
 
-    with open(original_output_dir/(input_file.name+".pkl"),'wb') as f:
-        pickle.dump(np_to_image(src_abs,src_phase),f)
-    with open(anonymized_output_dir/(input_file.name+".pkl"),'wb') as f:
-        pickle.dump(np_to_image(anonymized_abs,anonymized_phase),f)
-
-    #     #save as png image.
-    #     save_spectrogram_asImage(src_abs,src_phase,path_prep_original/(p.name+"_image.png"))
-    #     save_spectrogram_asImage(anonymized_abs,anonymized_phase,path_prep_anonymous/(p.name+"_image.png"))
-
-    print("processed {}".format(input_file.name+".pkl"))
-    return src_abs, src_phase, anonymized_abs, anonymized_phase
+        sa_list.append(src_abs)
+        sp_list.append(src_phase)
+        aa_list.append(anonymized_abs)
+        ap_list.append(anonymized_phase)
+        print("processed {}".format(input_file.name+".pkl"))
+        i=i+1
+        
+    return sa_list, sp_list, aa_list, ap_list 
 
 def postprocess(Dabs,Dphase):
     if(type(Dabs)==torch.Tensor): Dabs=Dabs.numpy()

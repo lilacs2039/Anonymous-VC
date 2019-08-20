@@ -118,22 +118,23 @@ def anonymization(fs, waveNDArray, f0Value = 0, sp_strechRatio = np.random.unifo
     sp = pw.cheaptrick(waveNDArray, f0, t, fs)  # スペクトル包絡の抽出
     ap = pw.d4c(waveNDArray, f0, t, fs)  # 非周期性指標の抽出
 #     f0_fixed0 = np.ones(f0.shape) * f0Value
-#     f0_median = np.median(f0)
-    sp_median = np.median(sp)
+    f0_median = np.median(f0)
+#     sp_median = np.median(sp)
     ap_median = np.median(ap)
     # SPを高周波方向に伸縮
-    sp2 = np.ones_like(sp)*np.min(sp)
-    for f in range(sp2.shape[1]):
-        if(int(f / sp_strechRatio) >= sp.shape[1]): break
-        sp2[:, f] = sp[:, int(f / sp_strechRatio)]
-    # SP/APに正規分布ノイズ
-    sp_noised = sp2 + np.random.normal(sp_median,sp_median/10,sp2.shape)
+#     sp2 = np.ones_like(sp)*np.min(sp)
+#     for f in range(sp2.shape[1]):
+#         if(int(f / sp_strechRatio) >= sp.shape[1]): break
+#         sp2[:, f] = sp[:, int(f / sp_strechRatio)]
+    # 正規分布ノイズ
+    f0_noised = f0 + np.random.normal(f0_median,f0_median/10,f0.shape)
+#     sp_noised = sp2 + np.random.normal(sp_median,sp_median/10,sp2.shape)
     ap_noised = ap + np.random.normal(ap_median,ap_median/10,ap.shape)
     #ガウシアンフィルタ
-    sp_gaussian = scipy.ndimage.filters.gaussian_filter(sp_noised,gaussian_s)
-    ap_gaussian = scipy.ndimage.filters.gaussian_filter(ap_noised,gaussian_s)
+    sp_gaussian = scipy.ndimage.filters.gaussian_filter(sp,gaussian_s)
+#     ap_gaussian = scipy.ndimage.filters.gaussian_filter(ap_noised,gaussian_s)
     # 音声復元
-    synthesized = pw.synthesize(f0, sp, ap, fs)
+    synthesized = pw.synthesize(f0_noised, sp_gaussian, ap_noised, fs)
     return synthesized
 
 

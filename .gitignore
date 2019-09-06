@@ -43,3 +43,6 @@ test/data/legacy_serialized.pt
 
 .idea
 mynote/*
+.ipynb_checkpoints/*
+*/.ipynb_checkpoints/*
+runs/*

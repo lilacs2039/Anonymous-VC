@@ -10,25 +10,26 @@ Pix2Pixを音声データに応用することで声質変換を目指すプロ�
 <audio
     controls
     src="readme/input.wav">
-        Your browser does not support the
-        <code>audio</code> element.
+        音声を再生したい場合は、GitHub Pagesからご確認ください。https://lilacs2039.github.io/Anonymous-VC/
 </audio>
 
 出力音声  
 <audio
     controls
     src="readme/prediction.wav">
-        Your browser does not support the
-        <code>audio</code> element.
+        音声を再生したい場合は、GitHub Pagesからご確認ください。https://lilacs2039.github.io/Anonymous-VC/
 </audio>
 
 教師音声  
 <audio
     controls
     src="readme/target.wav">
-        Your browser does not support the
-        <code>audio</code> element.
+        音声を再生したい場合は、GitHub Pagesからご確認ください。https://lilacs2039.github.io/Anonymous-VC/
 </audio>
+
+強度・位相スペクトログラム画像
+![スペクトログラム画像]("readme/spectrogram.png")
+
 
 # 各Jupyter Notebookファイルについて
 ## 01_prestudy_convert-by-pyworld.ipynb

@@ -6,10 +6,19 @@ Pix2Pixを音声データに応用することで声質変換を目指すプロ�
 
 # 変換結果（2019年10月30日　時点）
 
-入力音声  
+入力音声  １
 <audio
     controls
-    src="readme/input.wav">
+    src="https://raw.githubusercontent.com/lilacs2039/Anonymous-VC/master/readme/input.wav">
+        Your browser does not support the
+        <code>audio</code> element.
+</audio>
+
+
+入力音声  ２
+<audio
+    controls
+    src="/readme/input.wav">
         Your browser does not support the
         <code>audio</code> element.
 </audio>

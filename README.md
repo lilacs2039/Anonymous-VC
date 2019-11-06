@@ -28,8 +28,7 @@ Pix2Pixを音声データに応用することで声質変換を目指すプロ�
 </audio>
 
 強度・位相スペクトログラム画像
-![スペクトログラム画像]("readme/spectrogram.png")
-
+<img src="readme/spectrogram.png" />
 
 # 各Jupyter Notebookファイルについて
 ## 01_prestudy_convert-by-pyworld.ipynb
